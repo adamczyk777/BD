@@ -1,0 +1,20 @@
+\l			-> wyświetla baze danych
+\dt			-> wyświetla liste tabeli
+\d nazwa 	-> wyświetla strukturę tabeli
+\?			-> pomoc psql
+\h			-> pomoc SQL
+\q			-> zamyka psql
+\i skrypt	-> wykonuje skrypt
+\dn			-> wyświetla nazwy schematów
+
+Wykonując zapytanie SQL silnik bazy danych domyślnie szuka obiektów w schematach, których nazwy umieszczone są w zmiennej środowiskowej search_path.
+
+set search_path to siatkowka;
+\dt
+select imie, nazwisko from siatkarki;
+set search_path to public;
+select imie, nazwisko from siatkarki;
+set search_path to public, siatkowka;
+\dt
+
+phpPgAdmin -- przerobić samemu ale to się raczej nie przyda :( 
