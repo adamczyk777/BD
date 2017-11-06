@@ -1,0 +1,30 @@
+%ZAD1
+select count(*) from czekoladki;
+select count(*) from czekoladki where nadzienie is not null;
+select count(nadzienie) from czekoladki;
+
+%ZAD2
+select idpudelka, sum(masa * sztuk) from zawartosc natural join czekoladki group by idpudelka;
+select idpudelka, sum(masa * sztuk) from zawartosc natural join czekoladki group by idpudelka order by 2 desc limit 1;
+
+%ZAD3
+select datarealizacji,count(*) from zamowienia group by datarealizacji;
+select count(*) from zamowienia;
+
+%ZAD4
+select idczekoladki, count(*) from zawartosc natural join czekoladki group by idczekoladki order by 2 desc limit 1;
+select idpudelka, count(idczekoladki) from zawartosc natural join czekoladki where orzechy is null group by idpudelka order by 2 desc limit 2;
+
+%ZAD5
+select date_part('year',datarealizacji), date_part('quarter',datarealizacji), count(*) from zamowienia group by date_part('year',datarealizacji), date_part('quarter',datarealizacji);
+select date_part('year',datarealizacji), date_part('month',datarealizacji), count(*) from zamowienia group by date_part('year',datarealizacji), date_part('month',datarealizacji);
+
+%ZAD6
+select sum(zawartosc.sztuk*czekoladko.masa) from zawartosc natural join czekoladki;
+
+%ZAD7
+select pudelka.idpudelka, pudelka.cena-sum(zawartosc.sztuk*czekoladki.koszt) from pudelka natural join zawartosc join czekoladki using(idczekoladki) group by idpudelka;
+select sum(zysk) from zamowienia natural join artykuly natural join (select pudelka.idpudelka, pudelka.cena-sum(zawartosc.sztuk*czekoladki.koszt) as zysk from pudelka natural join zawartosc join czekoladki using(idczekoladki) group by idpudelka) b;
+
+%ZAD8
+???
