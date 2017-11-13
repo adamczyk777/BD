@@ -1,0 +1,31 @@
+%ZAD1
+insert into czekoladki values ('W98','Biały kieł','biała','laskowe','marcepan','Rozpływające się w rękach i kieszeniach',0.45,20);
+insert into klienci values (90,'Matusiak Edward','Kropiwnickiego 6/3','Leningrad','31-471','031 423 45 38'), (91,'Matusiak Alina','Kropiwnickiego 6/3','Leningrad','31-471','031 423 45 38'), (90,'Matusiak Edward','Kropiwnickiego 6/3','Leningrad','31-471','031 423 45 38'), (92,'Kimono Franek','Karateków 8','Mistrz','30-029','501 498 324');
+insert into klienci (select '93', 'Matusiak Iza', ulica, miejscowosc, kod, telefon from klienci where nazwa = 'Matusiak Edward');
+
+%ZAD2
+insert into czekoladki values('X91','Nieznana Nieznajoma',null,null,null,'Niewiedzialna czekolada wspomagająca odchudzanie...',0.26,0), ('M98','Mleczny Raj','Mleczna',null,null,'Aksamitna mleczna czekolada w kształcie butelki z mlekiem',0.26,36);
+
+%ZAD3
+delete from czekoladki where idczekoladki = 'X91' or idczekoladki = 'M98';
+insert into czekoladki(idczekoladki, nazwa, czekolada, opis, koszt, masa) values
+('X91','Nieznana Nieznajoma', null ,'Niewidzialna czekoladka wspomagajaca odchudzanie.','0.26','0'),
+('M98','Mleczny Raj','mleczna','Aksamitna mleczna czekolada w ksztalcie butelki z mlekiem.','0.26','36');
+
+%ZAD4
+update klienci set nazwa = 'Nowak Iza' where nazwa = 'Matusiak Iza';
+update czekoladki set koszt = 0.9*koszt where idczekoladki in ('W98','M98','X91');
+update czekoladki set nazwa = (select nazwa from czekoladki where idczekoladki = 'W98') where nazwa = 'Nieznana Nieznajoma';
+
+%ZAD5
+delete from klienci where nazwa similar to '%Matusiak%';
+
+%ZAD6
+insert into pudelka values ('TTTT','Czekoladka Tomka','Super czekoladka',0.5,1), ('IIII','Czekoladka Izy','Jeszcze lepsza czekoladka',1,1);
+insert into zawartosc values ('TTTT','b01',2),('TTTT','b02',2),('TTTT','b03',2),('TTTT','b04',2),('TTTT','b05',2),('IIII','b01',3),('IIII','b02',3),('IIII','b03',3),('IIII','b04',3),('IIII','b05',3);
+
+%ZAD7
+
+%ZAD8
+update zawartosc set sztuk = sztuk + 1 where idpudelka in ('TTTT','IIII');
+update czekoladki set czekolada = 'brak' where czekolada is null; update czekoladki set nadzienie = 'brak' where nadzienie is null; update czekoladki set orzechy = 'brak' where orzechy is null;
