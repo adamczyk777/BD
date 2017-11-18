@@ -1,6 +1,6 @@
 %ZAD1
 insert into czekoladki values ('W98','Biały kieł','biała','laskowe','marcepan','Rozpływające się w rękach i kieszeniach',0.45,20);
-insert into klienci values (90,'Matusiak Edward','Kropiwnickiego 6/3','Leningrad','31-471','031 423 45 38'), (91,'Matusiak Alina','Kropiwnickiego 6/3','Leningrad','31-471','031 423 45 38'), (90,'Matusiak Edward','Kropiwnickiego 6/3','Leningrad','31-471','031 423 45 38'), (92,'Kimono Franek','Karateków 8','Mistrz','30-029','501 498 324');
+insert into klienci values (901,'Matusiak Edward','Kropiwnickiego 6/3','Leningrad','31-471','031 423 45 38'), (911,'Matusiak Alina','Kropiwnickiego 6/3','Leningrad','31-471','031 423 45 38'), (902,'Matusiak Edward','Kropiwnickiego 6/3','Leningrad','31-471','031 423 45 38'), (921,'Kimono Franek','Karateków 8','Mistrz','30-029','501 498 324');
 insert into klienci (select '93', 'Matusiak Iza', ulica, miejscowosc, kod, telefon from klienci where nazwa = 'Matusiak Edward');
 
 %ZAD2
@@ -16,16 +16,33 @@ insert into czekoladki(idczekoladki, nazwa, czekolada, opis, koszt, masa) values
 update klienci set nazwa = 'Nowak Iza' where nazwa = 'Matusiak Iza';
 update czekoladki set koszt = 0.9*koszt where idczekoladki in ('W98','M98','X91');
 update czekoladki set nazwa = (select nazwa from czekoladki where idczekoladki = 'W98') where nazwa = 'Nieznana Nieznajoma';
+update klienci set miejscowosc = 'Piotrograd' where miejscowosc = 'Leningrad';
+update czekoladki set koszt = koszt + 0.15 where substr(idczekoladki,2) > '90';
 
 %ZAD5
 delete from klienci where nazwa similar to '%Matusiak%';
+delete from klienci where idklienta > 91;
+delete from czekoladki where koszt >= 0.45 or masa >= 36 or masa = 0;
 
 %ZAD6
 insert into pudelka values ('TTTT','Czekoladka Tomka','Super czekoladka',0.5,1), ('IIII','Czekoladka Izy','Jeszcze lepsza czekoladka',1,1);
 insert into zawartosc values ('TTTT','b01',2),('TTTT','b02',2),('TTTT','b03',2),('TTTT','b04',2),('TTTT','b05',2),('IIII','b01',3),('IIII','b02',3),('IIII','b03',3),('IIII','b04',3),('IIII','b05',3);
 
 %ZAD7
+\copy pudelka from 'test_pudelka.csv' with (null '',delimiter ','); 
+1721,"Przysmaki Izy","Zestaw ulubionych czekoladek Izy",100,1
+2117,"Przysmaki Tomka","Zestaw ulubionych czekoladek Tomka",10,1
+\copy zawartosc from 'test_zawartosc.csv' with (null '',delimiter ',');
+1721,b01,4
+1721,W98,4
+1721,w06,2
+1721,d08,5
+2117,d08,5
+2117,m07,3
+2117,m14,2
+2117,b01,4
 
 %ZAD8
 update zawartosc set sztuk = sztuk + 1 where idpudelka in ('TTTT','IIII');
 update czekoladki set czekolada = 'brak' where czekolada is null; update czekoladki set nadzienie = 'brak' where nadzienie is null; update czekoladki set orzechy = 'brak' where orzechy is null;
+update czekoladki set orzechy = null where orzechy = 'brak';
