@@ -1,3 +1,4 @@
+%ZAD1
 DROP SCHEMA IF EXISTS kwiaciarnia CASCADE;
 CREATE SCHEMA IF NOT EXISTS kwiaciarnia;
 
@@ -56,6 +57,7 @@ CREATE TABLE kwiaciarnia.zapotrzebowanie (
 	data DATE
 );
 
+%ZAD2
 copy kwiaciarnia.klienci from stdin with (delimiter ';', null 'BRAK DANYCH');
 msowins;msowins;Magdalena Sowinska;Krakow;30-362;ul. Ceglarska 4/101;msowins@wp.pl;(012) 664 46 99;(012) 664 46 99;707-709-12-13;BRAK DANYCH
 mbabik;mbabik;Malgorzata Babik;Krakow;31-466;ul. Akacjowa 4;mbabik@wp.pl;609 101 101;BRAK DANYCH;687-988-66-66;BRAK DANYCH
@@ -189,6 +191,7 @@ copy kwiaciarnia.historia from stdin with (delimiter ';', null 'BRAK DANYCH');
 2904001;lwitek;buk2;75.00;2007-03-29
 \.
 
+%ZAD3
 DROP SCHEMA IF EXISTS firma CASCADE;
 CREATE SCHEMA IF NOT EXISTS firma;
 
@@ -209,9 +212,8 @@ CREATE TABLE firma.pracownicy (
 	pobory NUMERIC(7,2)
 );
 
+%ZAD5
 alter table firma.dzialy add constraint dzial_fk foreign key(kierownik) references firma.pracownicy(idpracownika) on update cascade deferrable;
-
-
 begin;
 set constraints firma.dzial_fk deferred;
 	insert into firma.dzialy VALUES ('PH101','Handlowy','Marki',77);

@@ -1,0 +1,33 @@
+%ZAD2
+select dataRealizacji, idzamowienia from zamowienia where idklienta in (select idklienta from klienci where nazwa ~* '.*Antoni');
+select dataRealizacji, idzamowienia from zamowienia where idklienta in (select idklienta from klienci where ulica ~* '.*[0-9]+/[0-9]+.*');
+select dataRealizacji, idklienta from zamowienia where idklienta in (select idklienta from klienci where miejscowosc ~* 'Kraków') and date_part('year',dataRealizacji) = 2013 and date_part('month',dataRealizacji) = 11;
+
+%ZAD3
+select nazwa, ulica, miejscowosc from klienci where idklienta in (select idklienta from zamowienia where date_part('day',dataRealizacji) = 12 and date_part('month',dataRealizacji) = 11 and date_part('year',dataRealizacji) = 2013);
+select nazwa, ulica, miejscowosc from klienci where idklienta in (select idklienta from zamowienia where date_part('month',dataRealizacji) = 11 and date_part('year',dataRealizacji) = 2013);
+select nazwa, ulica, miejscowosc from klienci where idklienta in (select idklienta from zamowienia natural join artykuly natural join pudelka where nazwa ~* 'Kremowa fantazja' or nazwa ~* 'Kolekcja jesienna');
+select nazwa, ulica, miejscowosc from klienci where idklienta in (select idklienta from zamowienia natural join artykuly natural join pudelka where (nazwa ~* 'Kremowa fantazja' or nazwa ~* 'Kolekcja jesienna') and sztuk > 1);
+select nazwa, ulica, miejscowosc from klienci where idklienta in (select idklienta from zamowienia natural join artykuly natural join pudelka join zawartosc using(idpudelka) join czekoladki using(idczekoladki) where orzechy ~* 'migdały');
+select nazwa, ulica, miejscowosc from klienci k where exists (select idklienta from zamowienia z where k.idklienta = z.idklienta);
+select nazwa, ulica, miejscowosc from klienci k where not exists (select idklienta from zamowienia z where k.idklienta = z.idklienta);
+
+%ZAD4
+select nazwa, opis, cena from pudelka p where exists (select 1 from zawartosc natural join czekoladki where idczekoladki ~* 'D09' and idpudelka = p.idpudelka);
+select nazwa, opis, cena from pudelka p where exists (select 1 from zawartosc natural join czekoladki where nazwa ~* 'Gorzka truskawkowa' and idpudelka = p.idpudelka);
+select nazwa, opis, cena from pudelka p where exists (select 1 from zawartosc natural join czekoladki where nazwa ~* 'S.*' and idpudelka = p.idpudelka);
+select nazwa, opis, cena from pudelka p where exists (select 1 from zawartosc natural join czekoladki where sztuk > 3 and idpudelka = p.idpudelka);
+select nazwa, opis, cena from pudelka p where exists (select 1 from zawartosc natural join czekoladki where sztuk => 3 and nazwa = 'Gorzka truskawkowa' and idpudelka = p.idpudelka);
+select nazwa, opis, cena from pudelka p where exists (select 1 from zawartosc natural join czekoladki where nadzienie ~* 'truskawki');
+select nazwa, opis, cena from pudelka p where not exists (select 1 from zawartosc natural join czekoladki where czekolada  ~* 'gorzka' and idpudelka = p.idpudelka);
+select nazwa, opis, cena from pudelka p where not exists (select 1 from zawartosc natural join czekoladki where orzechy is not null and idpudelka = p.idpudelka);
+select nazwa, opis, cena from pudelka p where exists (select 1 from zawartosc natural join czekoladki where nadzienie is null and idpudelka = p.idpudelka);
+
+%ZAD5
+select p.nazwa,sum(z.sztuk) from pudelka p natural join zawartosc z group by p.nazwa having sum(z.sztuk) >= all  (select sum(sztuk) from zawartosc group by idpudelka);
+select p.nazwa,sum(z.sztuk) from pudelka p natural join zawartosc z group by p.idpudelka having sum(z.sztuk) <= all (select sum(sztuk) from zawartosc group by idpudelka);
+select p.nazwa,sum(z.sztuk) from pudelka p natural join zawartosc z group by idpudelka having sum(z.sztuk) > all (select avg(sztuk) from zawartosc group by idpudelka);
+select p.nazwa,sum(z.sztuk) from pudelka p natural join zawartosc z group by p.nazwa having sum(z.sztuk) >= all  (select sum(sztuk) from zawartosc group by idpudelka) or sum(z.sztuk) <= all (select sum(sztuk) from zawartosc group by idpudelka);
+
+%ZAD6
+select idpudelka, (select count(*) from pudelka where idpudelka <= p1.idpudelka) from pudelka p1 order by 2;
