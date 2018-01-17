@@ -1,0 +1,216 @@
+--zad1
+create or replace function masaPudelka(idpudelka2 char(4))
+returns integer as
+$$
+declare
+	agg integer;
+begin
+	select sum(masa*sztuk) into agg from pudelka natural join zawartosc join czekoladki using(idczekoladki) where pudelka.idpudelka = idpudelka2 group by idpudelka;
+	return agg;
+end;
+$$
+language plpgsql;
+
+create or replace function liczbaCzekoladek(idpudelka2 char(4))
+returns integer as
+$$
+declare
+	agg integer;
+begin
+	select sum(sztuk) into agg from pudelka natural join zawartosc join czekoladki using(idczekoladki) where pudelka.idpudelka = idpudelka2 group by idpudelka;
+	return agg;
+end;
+$$
+language plpgsql;
+
+--zad2
+create or replace function zysk(idpudelka2 char(4))
+returns numeric(7,2) as
+$$
+declare
+	gain integer;
+	loose integer;
+begin
+	select sum(koszt*sztuk) into loose from pudelka natural join zawartosc join czekoladki using(idczekoladki) where pudelka.idpudelka = idpudelka2;
+	select cena into gain from pudelka where idpudelka = idpudelka2;
+	return gain - loose - 0.9;
+end;
+$$
+language plpgsql;
+
+create or replace function zyskWDniu(mdata date)
+returns numeric(7,2) as
+$$
+declare
+	agg numeric(7,2);
+beginzys
+	select sum(zysk(n.idpudelka)) from (select distinct on (idpudelka) idpudelka from zamowienia natural join artykuly natural join pudelka where datarealizacji = mdata) n into agg; 
+	return agg;
+end;
+$$
+language plpgsql;
+
+--zad3
+create or replace function sumaZamowien(idklienta2 integer)
+returns numeric(7,2) as
+$$
+declare
+	sumka numeric(7,2);
+begin
+	select sum(sztuk*cena) into sumka from klienci natural join zamowienia natural join artykuly join pudelka using(idpudelka) where idklienta = idklienta2;
+	return sumka;
+end;
+$$
+language plpgsql;
+
+create or replace function rabat(idklienta2 integer)
+returns numeric(7,2) as
+$$
+declare
+	sumka numeric(7,2);
+	rabacik numeric(7,2);
+begin
+	select coalesce(sumaZamowien(idklienta2),0) into sumka;
+	rabacik := case
+		when sumka <= 100 then 0.0
+		when sumka > 100 and sumka <= 200 then 0.04
+		when sumka > 200 and sumka <= 400 then 0.07
+		else 0.08
+	end;
+	return rabacik;
+end;
+$$
+language plpgsql;
+
+--zad4
+create or replace function podwyzka()
+returns void as
+$$
+declare
+	czeko czekoladki%rowType;
+	pude pudelka%rowType;
+	liczba numeric(7,2);
+begin
+	for czeko in select * from czekoladki
+	loop
+		if czeko.koszt <= 0.20 then 
+			update czekoladki set koszt = koszt + 0.03 where idczekoladki = czeko.idczekoladki;
+			for pude in select * from pudelka
+			loop
+				if (select count(*) from zawartosc where idczekoladki = czeko.idczekoladki and idpudelka = pude.idpudelka) > 0 then 
+					select sztuk * 0.03 into liczba from pudelka natural join zawartosc where idczekoladki = czeko.idczekoladki and idpudelka = pude.idpudelka;
+					update pudelka set cena = cena + liczba where idpudelka = pude.idpudelka;
+				end if;
+			end loop; 
+		elseif czeko.koszt > 0.20 and czeko.koszt <= 0.30 then
+			update czekoladki set koszt = koszt + 0.04 where idczekoladki = czeko.idczekoladki;
+			for pude in select * from pudelka
+			loop
+				if (select count(*) from zawartosc where idczekoladki = czeko.idczekoladki and idpudelka = pude.idpudelka) > 0 then 
+					select sztuk * 0.04 into liczba from pudelka natural join zawartosc where idczekoladki = czeko.idczekoladki and idpudelka = pude.idpudelka;
+					update pudelka set cena = cena + liczba where idpudelka = pude.idpudelka;
+				end if;
+			end loop; 
+		else
+			update czekoladki set koszt = koszt + 0.05 where idczekoladki = czeko.idczekoladki;
+			for pude in select * from pudelka
+			loop
+				if (select count(*) from zawartosc where idczekoladki = czeko.idczekoladki and idpudelka = pude.idpudelka) > 0 then 
+					select sztuk * 0.05 into liczba from pudelka natural join zawartosc where idczekoladki = czeko.idczekoladki and idpudelka = pude.idpudelka;
+					update pudelka set cena = cena + liczba where idpudelka = pude.idpudelka;
+				end if;
+			end loop; 
+		end if;		
+	end loop;
+end;
+$$
+language plpgsql;
+
+--zad5
+create or replace function obnizka()
+returns void as
+$$
+declare
+	czeko czekoladki%rowType;
+	pude pudelka%rowType;
+	liczba integer;
+begin
+	for czeko in select * from czekoladki
+	loop
+		if czeko.koszt <= 0.23 then 
+			update czekoladki set koszt = koszt - 0.03 where idczekoladki = czeko.idczekoladki;
+			for pude in select * from pudelka
+			loop
+				if (select count(*) from zawartosc where idczekoladki = czeko.idczekoladki and idpudelka = pude.idpudelka) > 0 then 
+					select sztuk * 0.03 into liczba from pudelka natural join zawartosc where idczekoladki = czeko.idczekoladki and idpudelka = pude.idpudelka;
+					update pudelka set cena = cena - liczba where idpudelka = pude.idpudelka;
+				end if;
+			end loop; 
+		elseif czeko.koszt > 0.23 and czeko.koszt <= 0.34 then
+			update czekoladki set koszt = koszt - 0.04 where idczekoladki = czeko.idczekoladki;
+			for pude in select * from pudelka
+			loop
+				if (select count(*) from zawartosc where idczekoladki = czeko.idczekoladki and idpudelka = pude.idpudelka) > 0 then 
+					select sztuk * 0.04 into liczba from pudelka natural join zawartosc where idczekoladki = czeko.idczekoladki and idpudelka = pude.idpudelka;
+					update pudelka set cena = cena - liczba where idpudelka = pude.idpudelka;
+				end if;
+			end loop; 
+		else
+			update czekoladki set koszt = koszt - 0.05 where idczekoladki = czeko.idczekoladki;
+			for pude in select * from pudelka
+			loop
+				if (select count(*) from zawartosc where idczekoladki = czeko.idczekoladki and idpudelka = pude.idpudelka) > 0 then 
+					select sztuk * 0.05 into liczba from pudelka natural join zawartosc where idczekoladki = czeko.idczekoladki and idpudelka = pude.idpudelka;
+					update pudelka set cena = cena - liczba where idpudelka = pude.idpudelka;
+				end if;
+			end loop; 
+		end if;		
+	end loop;
+end;
+$$
+language plpgsql;
+
+--zad6
+create temporary table miniZamowienia(idzamowienia integer, idpudelka char(4), datarealizacji date);
+
+create or replace function info()
+returns setof miniZamowienia as
+$$
+begin
+	return query
+	select idzamowienia, idpudelka, datarealizacji from zamowienia natural join artykuly natural join pudelka;
+end
+$$
+language plpgsql;
+
+create temporary table miniKlienci(nazwa varchar(130),ulica varchar(30), miejscowosc varchar(15), kod char(6));
+
+create or replace function info2(miejscowosc2 varchar(15))
+returns setof miniKlienci as
+$$
+begin
+	return query
+	select nazwa, ulica, miejscowosc, kod from klienci where miejscowosc = miejscowosc2;
+end
+$$
+language plpgsql;
+
+--zad7
+create or replace function rabat2(idklienta2 varchar(10))
+returns numeric(7,2) as
+$$
+declare
+	sumka numeric(7,2);
+	rabacik numeric(7,2);
+begin
+	sumka := (select coalesce(sum(cena),0) from kwiaciarnia.zamowienia where idklienta = idklienta2) + (select coalesce(sum(cena),0) from kwiaciarnia.historia where idklienta = idklienta2);
+	rabacik := case
+		when sumka > 0 and sumka < 100 then 0.05
+		when sumka > 100 and sumka <= 400 then 0.1
+		when sumka > 400 and sumka <= 700 then 0.15
+		else 0.2
+	end;
+	return rabacik;
+end;
+$$
+language plpgsql;
